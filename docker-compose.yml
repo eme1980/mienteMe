@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  # 1. Base de Datos (DB)
+  db:
+    image: mariadb:10.6 # Una versión estable de MariaDB
+    container_name: mienteme_db
+    restart: always
+    environment:
+      # Cargar credenciales desde .env para no exponerlas en este archivo
+      # *** CAMBIA ESTAS CONTRASEÑAS EN EL .env ***
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    # Almacena los datos de la DB en tu PC para que persistan
+    volumes:
+      - db_data:/var/lib/mysql
+
+  # 2. Servidor WordPress (WP)
+  wordpress:
+    depends_on:
+      - db # Espera a que la DB esté lista
+    image: wordpress:latest # La última versión de WordPress
+    container_name: mienteme_wp
+    restart: always
+    ports:
+      - "8080:80" # Esto hace que tu blog sea accesible en http://localhost:8080
+    environment:
+      WORDPRESS_DB_HOST: db:3306 # El nombre del servicio de la DB
+      WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
+      WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD} # Cargado desde .env
+      WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME} # Cargado desde .env
+    # Este volumen es clave para que los archivos (temas, plugins, media) persistan
+    volumes:
+      - ./wp-content:/var/www/html/wp-content
+      
+# Zonas de almacenamiento (Volúmenes)
+volumes:
+  db_data:
