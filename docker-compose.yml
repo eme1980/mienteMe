@@ -34,6 +34,7 @@ services:
     # Este volumen es clave para que los archivos (temas, plugins, media) persistan
     volumes:
       - ./wp-content:/var/www/html/wp-content
+      - ./uploads.ini:/usr/local/etc/php/conf.d/uploads.ini
       
 # Zonas de almacenamiento (Volúmenes)
 volumes:
