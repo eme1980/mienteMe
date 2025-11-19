@@ -24,8 +24,8 @@ services:
     image: wordpress:latest # La última versión de WordPress
     container_name: mienteme_wp
     restart: always
-    ports:
-      - "8080:80" # Esto hace que tu blog sea accesible en http://localhost:8080
+    # ports:
+    #   - "8080:80" # Esto hace que tu blog sea accesible en http://localhost:8080
     environment:
       WORDPRESS_DB_HOST: db:3306 # El nombre del servicio de la DB
       WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
@@ -35,7 +35,13 @@ services:
     volumes:
       - ./wp-content:/var/www/html/wp-content
       - ./uploads.ini:/usr/local/etc/php/conf.d/uploads.ini
+    networks:
+      - dokploy-network
       
 # Zonas de almacenamiento (Volúmenes)
 volumes:
   db_data:
+
+networks:
+  dokploy-network:
+    external: true
