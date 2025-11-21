@@ -1,7 +1,6 @@
 services:
   db:
     image: mariadb:10.6
-    container_name: mienteme_db
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
@@ -10,15 +9,16 @@ services:
       MYSQL_PASSWORD: ${WORDPRESS_DB_PASSWORD}
     volumes:
       - db_data:/var/lib/mysql
+    networks:
+      - internal # Solo red interna (seguridad)
 
   wordpress:
     depends_on:
       - db
     image: wordpress:latest
-    container_name: mienteme_wp
     restart: always
     ports:
-      - "8080:80"
+      - "8080:80" # Útil para local. En Dokploy Traefik usará la red interna.
     environment:
       WORDPRESS_DB_HOST: db:3306
       WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
@@ -26,7 +26,16 @@ services:
       WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME}
     volumes:
       - wp_data:/var/www/html
+    networks:
+      - internal        # Para hablar con la DB
+      - dokploy-network # Para hablar con Traefik (Internet)
 
 volumes:
   db_data:
   wp_data:
+
+networks:
+  internal:
+    driver: bridge
+  dokploy-network:
+    external: true
