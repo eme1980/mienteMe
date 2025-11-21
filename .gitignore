@@ -1,2 +1,16 @@
+# Ignorar archivos de sistema y entorno
 .env
+.DS_Store
 uploads.ini
+
+# Ignorar uploads (contenido generado por usuario)
+wp-content/uploads/
+wp-content/upgrade/
+wp-content/cache/
+
+# NO ignorar plugins ni temas (es lo que desarrollas)
+!wp-content/plugins/
+!wp-content/themes/
+
+# Ignorar configuración generada por Docker
+wp-config.php
