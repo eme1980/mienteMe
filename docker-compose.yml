@@ -7,10 +7,11 @@ services:
     networks:
       - internal
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
-      MYSQL_DATABASE: ${DB_NAME}
-      MYSQL_USER: ${DB_USER}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
+      # Aquí usamos las variables tal cual las tienes en tu .env
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
 
   wordpress:
     depends_on:
@@ -18,17 +19,19 @@ services:
     image: wordpress:latest
     restart: unless-stopped
     ports:
-      - "8080:80" # Puerto para acceso local (localhost:8080)
+      - "8080:80"
     volumes:
-      - ./wp-content:/var/www/html/wp-content # Mapea tu código local
+      - ./wp-content:/var/www/html/wp-content
     networks:
       - internal
       - dokploy-network
     environment:
       WORDPRESS_DB_HOST: db:3306
-      WORDPRESS_DB_USER: ${DB_USER}
-      WORDPRESS_DB_PASSWORD: ${DB_PASSWORD}
-      WORDPRESS_DB_NAME: ${DB_NAME}
+      # ¡OJO AQUÍ! Usamos las mismas variables de MYSQL para asegurar que coinciden.
+      # WordPress debe conectarse con el mismo usuario que creó la base de datos.
+      WORDPRESS_DB_USER: ${MYSQL_USER}      # Usará 'wp_user'
+      WORDPRESS_DB_PASSWORD: ${MYSQL_PASSWORD} # Usará 'ev8Uryoa'
+      WORDPRESS_DB_NAME: ${MYSQL_DATABASE}     # Usará 'mienteme_db'
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.mienteme.rule=Host(`${DOMAIN_NAME}`)"
