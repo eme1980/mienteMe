@@ -7,7 +7,6 @@ services:
     networks:
       - internal
     environment:
-      # Aquí usamos las variables tal cual las tienes en tu .env
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
@@ -27,17 +26,26 @@ services:
       - dokploy-network
     environment:
       WORDPRESS_DB_HOST: db:3306
-      # ¡OJO AQUÍ! Usamos las mismas variables de MYSQL para asegurar que coinciden.
-      # WordPress debe conectarse con el mismo usuario que creó la base de datos.
-      WORDPRESS_DB_USER: ${MYSQL_USER}      # Usará 'wp_user'
-      WORDPRESS_DB_PASSWORD: ${MYSQL_PASSWORD} # Usará 'ev8Uryoa'
-      WORDPRESS_DB_NAME: ${MYSQL_DATABASE}     # Usará 'mienteme_db'
+      WORDPRESS_DB_USER: ${MYSQL_USER}
+      WORDPRESS_DB_PASSWORD: ${MYSQL_PASSWORD}
+      WORDPRESS_DB_NAME: ${MYSQL_DATABASE}
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.mienteme.rule=Host(`${DOMAIN_NAME}`)"
-      - "traefik.http.routers.mienteme.entrypoints=websecure"
-      - "traefik.http.routers.mienteme.tls.certresolver=letsencrypt"
-      - "traefik.http.services.mienteme.loadbalancer.server.port=80"
+      
+      # --- CONFIGURACIÓN DEL ROUTER (TU DOMINIO) ---
+      # Usamos OR (||) para aceptar tanto la variable como el dominio fijo
+      - "traefik.http.routers.mienteme-router.rule=Host(`${DOMAIN_NAME}`) || Host(`mienteme.es`)"
+      - "traefik.http.routers.mienteme-router.entrypoints=websecure"
+      - "traefik.http.routers.mienteme-router.tls.certresolver=letsencrypt"
+      
+      # --- LA SOLUCIÓN AL ERROR DE MULTIPLES SERVICIOS ---
+      # 1. Definimos un nombre ÚNICO para tu servicio interno ("mienteme-svc")
+      - "traefik.http.routers.mienteme-router.service=mienteme-svc"
+      
+      # 2. Configuramos ese servicio específico apuntando al puerto 80
+      - "traefik.http.services.mienteme-svc.loadbalancer.server.port=80"
+      
+      # 3. Red de Traefik
       - "traefik.docker.network=dokploy-network"
 
 volumes:
