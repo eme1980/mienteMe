@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   db:
     image: mariadb:10.6
@@ -17,10 +19,18 @@ services:
       - db
     image: wordpress:latest
     restart: unless-stopped
-    ports:
-      - "8080:80"
+    # Eliminamos 'ports' para obligar a que todo pase por Traefik (seguridad)
     volumes:
-      - ./wp-content:/var/www/html/wp-content
+      # --- CÓDIGO (Desde tu Git) ---
+      # Mapeamos solo temas y plugins para que se actualicen con tu repo
+      - ./wp-content/themes:/var/www/html/wp-content/themes
+      - ./wp-content/plugins:/var/www/html/wp-content/plugins
+      
+      # --- DATOS (Persistencia en el Servidor) ---
+      # Usamos un volumen nombrado para las imágenes subidas. 
+      # Esto evita que Git toque tus fotos y facilita los backups.
+      - uploads_data:/var/www/html/wp-content/uploads
+      
     networks:
       - internal
       - dokploy-network
@@ -31,25 +41,17 @@ services:
       WORDPRESS_DB_NAME: ${MYSQL_DATABASE}
     labels:
       - "traefik.enable=true"
-      
-      # --- CONFIGURACIÓN DEL ROUTER (TU DOMINIO) ---
-      # Usamos OR (||) para aceptar tanto la variable como el dominio fijo
-      - "traefik.http.routers.mienteme-router.rule=Host(`${DOMAIN_NAME}`) || Host(`mienteme.es`)"
+      # Usamos solo la variable. Asegúrate de definir DOMAIN_NAME en Dokploy.
+      - "traefik.http.routers.mienteme-router.rule=Host(`${DOMAIN_NAME}`)"
       - "traefik.http.routers.mienteme-router.entrypoints=websecure"
       - "traefik.http.routers.mienteme-router.tls.certresolver=letsencrypt"
-      
-      # --- LA SOLUCIÓN AL ERROR DE MULTIPLES SERVICIOS ---
-      # 1. Definimos un nombre ÚNICO para tu servicio interno ("mienteme-svc")
       - "traefik.http.routers.mienteme-router.service=mienteme-svc"
-      
-      # 2. Configuramos ese servicio específico apuntando al puerto 80
       - "traefik.http.services.mienteme-svc.loadbalancer.server.port=80"
-      
-      # 3. Red de Traefik
       - "traefik.docker.network=dokploy-network"
 
 volumes:
   db_data:
+  uploads_data: # Volumen nuevo para separar las subidas del código
 
 networks:
   internal:
