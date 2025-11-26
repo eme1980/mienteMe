@@ -30,6 +30,7 @@ services:
       # Usamos un volumen nombrado para las imágenes subidas. 
       # Esto evita que Git toque tus fotos y facilita los backups.
       - uploads_data:/var/www/html/wp-content/uploads
+      - ./uploads.ini:/usr/local/etc/php/conf.d/uploads.ini
       
     networks:
       - internal

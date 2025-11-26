@@ -1,7 +1,6 @@
 # Ignorar archivos de sistema y entorno
 .env
 .DS_Store
-uploads.ini
 
 # Ignorar uploads (contenido generado por usuario)
 wp-content/uploads/
